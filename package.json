@@ -1,12 +1,12 @@
 {
-  "name": "splayer",
+  "name": "NKY Music",
   "version": "2.0.8",
   "description": "A minimalist music player",
   "main": "./out/main/index.js",
-  "author": "imsyy",
-  "home": "https://imsyy.top",
-  "github": "https://github.com/imsyy/SPlayer",
-  "repository": "github:imsyy/SPlayer",
+  "author": "NanKoYo",
+  "home": "https://nankoyo.com",
+  "github": "https://github.com/nankoyo/SPlayer",
+  "repository": "github:nankoyo/SPlayer",
   "license": "AGPL-3.0",
   "license-file": "LICENSE",
   "engines": {
