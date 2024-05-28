@@ -5,8 +5,8 @@
   "main": "./out/main/index.js",
   "author": "NanKoYo",
   "home": "https://nankoyo.com",
-  "github": "https://github.com/nankoyo/SPlayer",
-  "repository": "github:nankoyo/SPlayer",
+  "github": "https://github.com/NanKoYo-Inc",
+  "repository": "github:NanKoYo-Inc",
   "license": "AGPL-3.0",
   "license-file": "LICENSE",
   "engines": {
