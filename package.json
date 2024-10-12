@@ -1,14 +1,8 @@
 {
-  "name": "splayer",
-  "productName": "SPlayer",
-  "version": "3.0.0-alpha.4",
-  "description": "A minimalist music player",
-  "main": "./out/main/index.js",
-  "author": "imsyy",
-  "home": "https://imsyy.top",
-  "github": "https://github.com/imsyy/SPlayer",
-  "blog": "https://blog.imsyy.top",
-  "repository": "github:imsyy/SPlayer",
+  "author": "NanKoYo-Inc",
+  "home": "https://nankoyo.com",
+  "github": "https://github.com/NanKoYo-Inc/SPlayer",
+  "repository": "github:NanKoYo-Inc/SPlayer",
   "license": "AGPL-3.0",
   "license-file": "LICENSE",
   "engines": {
