@@ -149,6 +149,7 @@
         :loading="loading"
         :height="songListHeight"
         :playListId="playlistId"
+        :doubleClickAction="searchData?.length ? 'add' : 'all'"
         @scroll="listScroll"
         @removeSong="removeSong"
       />
@@ -174,11 +175,11 @@ import { playlistDetail, playlistAllSongs } from "@/api/playlist";
 import { formatCoverList, formatSongsList } from "@/utils/format";
 import { coverLoaded, formatNumber, fuzzySearch, renderIcon } from "@/utils/helper";
 import { renderToolbar } from "@/utils/meta";
-import { debounce, isObject } from "lodash-es";
+import { debounce, isObject, uniqBy } from "lodash-es";
 import { useDataStore, useStatusStore } from "@/stores";
 import { openBatchList, openUpdatePlaylist } from "@/utils/modal";
 import { formatTimestamp } from "@/utils/time";
-import { isLogin } from "@/utils/auth";
+import { isLogin, updateUserLikePlaylist } from "@/utils/auth";
 import player from "@/utils/player";
 
 const router = useRouter();
@@ -301,7 +302,8 @@ const getPlaylistData = async (id: number, getList: boolean, refresh: boolean) =
   if (isLogin() === 1 && (playlistDetailData.value?.count as number) < 800) {
     const ids: number[] = detail.privileges.map((song: any) => song.id as number);
     const result = await songDetail(ids);
-    playlistData.value = formatSongsList(result.songs);
+    // 直接批量详情返回时也进行一次按 id 去重
+    playlistData.value = uniqBy(formatSongsList(result.songs), "id");
   } else {
     await getPlaylistAllSongs(id, playlistDetailData.value.count || 0, refresh);
   }
@@ -316,7 +318,8 @@ const loadLikedCache = () => {
     playlistDetailData.value = dataStore.likeSongsList.detail;
   }
   if (dataStore.likeSongsList.data.length) {
-    playlistData.value = dataStore.likeSongsList.data;
+    // 去重缓存中的歌曲，避免重复展示与后续重复拼接
+    playlistData.value = uniqBy(dataStore.likeSongsList.data, "id");
   }
 };
 
@@ -338,11 +341,13 @@ const getPlaylistAllSongs = async (
     const result = await playlistAllSongs(id, limit, offset);
     const songData = formatSongsList(result.songs);
     listData.push(...songData);
-    if (!refresh) playlistData.value = playlistData.value.concat(songData);
+    // 非刷新模式下，增量拼接时进行去重，避免与缓存或上一页数据重复
+    if (!refresh) playlistData.value = uniqBy([...playlistData.value, ...songData], "id");
     // 更新数据
     offset += limit;
   } while (offset < count && isLikedPage.value);
-  if (refresh) playlistData.value = listData;
+  // 刷新模式下，统一以最终聚合数据为准，并进行去重
+  if (refresh) playlistData.value = uniqBy(listData, "id");
   // 关闭加载
   loadingMsgShow(false);
 };
@@ -408,9 +413,32 @@ onDeactivated(() => loadingMsgShow(false));
 onUnmounted(() => loadingMsgShow(false));
 
 onMounted(async () => {
-  const data: any = await dataStore.getUserLikePlaylist();
-  const id = data?.detail?.id;
-  if (id) getPlaylistDetail(id);
+  // 首先确保用户歌单数据已加载
+  if (!dataStore.userLikeData.playlists?.length) {
+    try {
+      await updateUserLikePlaylist();
+    } catch (error) {
+      console.error("Failed to update user playlist data:", error);
+      loading.value = false;
+      return;
+    }
+  }
+
+  // 获取我喜欢的音乐歌单ID
+  const likedPlaylistId = dataStore.userLikeData.playlists?.[0]?.id;
+  if (likedPlaylistId) {
+    getPlaylistDetail(likedPlaylistId);
+  } else {
+    // 如果没有找到我喜欢的音乐歌单，尝试从缓存获取
+    const data: any = await dataStore.getUserLikePlaylist();
+    const id = data?.detail?.id;
+    if (id) {
+      getPlaylistDetail(id);
+    } else {
+      loading.value = false;
+      window.$message.error("无法获取我喜欢的音乐歌单");
+    }
+  }
 });
 </script>
 

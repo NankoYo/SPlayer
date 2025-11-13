@@ -29,10 +29,11 @@ import {
 import type { CoverType } from "@/types/main";
 import { useStatusStore, useSettingStore, useDataStore, useMusicStore } from "@/stores";
 import { useRouter, RouterLink } from "vue-router";
-import { isElectron, renderIcon } from "@/utils/helper";
+import { renderIcon } from "@/utils/helper";
 import { openCreatePlaylist } from "@/utils/modal";
 import { debounce } from "lodash-es";
 import { isLogin } from "@/utils/auth";
+import { isElectron } from "@/utils/env";
 import player from "@/utils/player";
 
 const router = useRouter();
@@ -176,7 +177,15 @@ const menuOptions = computed<MenuOption[] | MenuGroupOption[]>(() => {
           children: [...likedPlaylist.value],
         },
       ]
-    : [];
+    : [
+        {
+          key: "local",
+          link: "local",
+          label: "本地歌曲",
+          show: isElectron,
+          icon: renderIcon("FolderMusic"),
+        },
+      ];
 });
 
 // 生成歌单列表
